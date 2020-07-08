@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.portal.integralMall.dao.impl.PwBpGoodsDaoImpl">
+  <resultMap id="BaseResultMap" type="com.portal.integralMall.model.PwBpGoodsEntity">
+    <id column="BP_GOODSID" jdbcType="VARCHAR" property="bpGoodsid" />
+    <result column="GOODS_NAME" jdbcType="VARCHAR" property="goodsName" />
+    <result column="STOCK_NUMBER" jdbcType="DECIMAL" property="stockNumber" />
+    <result column="GOODS_DESC" jdbcType="VARCHAR" property="goodsDesc" />
+    <result column="GOODS_BRAND" jdbcType="VARCHAR" property="goodsBrand" />
+    <result column="GOODS_MODEL" jdbcType="VARCHAR" property="goodsModel" />
+    <result column="GOODS_FEATURE" jdbcType="VARCHAR" property="goodsFeature" />
+    <result column="REDEEM_BP" jdbcType="DECIMAL" property="redeemBp" />
+    <result column="REDEEM_NUMBER" jdbcType="DECIMAL" property="redeemNumber" />
+    <result column="REDEEM_RULEID" jdbcType="VARCHAR" property="redeemRuleid" />
+    <result column="GOODS_OPEN_DATE" jdbcType="TIMESTAMP" property="goodsOpenDate" />
+    <result column="GOODS_CLOSE_DATE" jdbcType="TIMESTAMP" property="goodsCloseDate" />
+    <result column="GOODS_STATUS" jdbcType="VARCHAR" property="goodsStatus" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    BP_GOODSID, GOODS_NAME, STOCK_NUMBER, GOODS_DESC, GOODS_BRAND, GOODS_MODEL, GOODS_FEATURE, 
+    REDEEM_BP, REDEEM_NUMBER, REDEEM_RULEID, GOODS_OPEN_DATE, GOODS_CLOSE_DATE, GOODS_STATUS
+  </sql>
+  
+  <select id="selectByBpGoodsid" parameterType="com.portal.integralMall.model.PwBpGoodsEntity" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from PW_BP_GOODS
+    where BP_GOODSID = #{bpGoodsid,jdbcType=VARCHAR}
+  </select>
+  
+    <select id="selectBpGoodsList" parameterType="com.portal.integralMall.model.PwBpGoodsEntity" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from PW_BP_GOODS
+    where GOODS_STATUS in
+    <foreach item="item" index="index" collection="status" open="(" separator="," close=")">  
+		#{item}
+	</foreach>
+    <if test="goodsName != null and goodsName.trim().length() > 0">
+      AND GOODS_NAME like '%' || #{goodsName} || '%'
+    </if>
+    <if test="goodsDesc != null and goodsDesc.trim().length() > 0">
+      AND GOODS_DESC like '%' || #{goodsDesc} || '%'
+    </if>
+    <if test="goodsOpenDate != null">
+      AND GOODS_OPEN_DATE &lt;= #{goodsOpenDate}
+      AND (
+      		(GOODS_CLOSE_DATE is not null 
+      		and GOODS_CLOSE_DATE &gt;= #{goodsOpenDate})
+      		or GOODS_CLOSE_DATE is null
+      		)
+      		
+    </if>
+    order by BP_GOODSID desc
+  </select>
+  
+  <select id="selectConvertBpGoodsList" parameterType="com.portal.integralMall.model.PwBpGoodsEntity" resultMap="BaseResultMap">
+	SELECT
+		g.BP_GOODSID,
+		g.GOODS_NAME,
+		g.STOCK_NUMBER,
+		g.GOODS_DESC,
+		g.GOODS_BRAND,
+		g.GOODS_MODEL,
+		g.GOODS_FEATURE,
+		g.REDEEM_BP,
+		g.REDEEM_NUMBER,
+		g.REDEEM_RULEID,
+		g.GOODS_OPEN_DATE,
+		g.GOODS_CLOSE_DATE,
+		g.GOODS_STATUS
+	FROM
+		PW_BP_GOODS g
+		LEFT JOIN PW_GOODS_RULE_LINK l ON g.BP_GOODSID = l.BP_GOODSID
+		LEFT JOIN PW_REDEEM_RULE r ON l.RULE_ID = r.RULE_ID
+    WHERE GOODS_STATUS in
+    <foreach item="item" index="index" collection="status" open="(" separator="," close=")">  
+		#{item}
+	</foreach>
+    <if test="goodsName != null and goodsName.trim().length() > 0">
+      AND g.GOODS_NAME like '%' || #{goodsName} || '%'
+    </if>
+    <if test="goodsDesc != null and goodsDesc.trim().length() > 0">
+      AND g.GOODS_DESC like '%' || #{goodsDesc} || '%'
+    </if>
+      AND g.GOODS_OPEN_DATE &lt;= sysdate
+      AND	(	
+      			(
+		      		g.GOODS_CLOSE_DATE is not null 
+		      		AND g.GOODS_CLOSE_DATE &gt;= sysdate
+	      		)
+      			OR g.GOODS_CLOSE_DATE is null
+      		)
+      AND g.BP_GOODSID NOT IN
+      		(
+				SELECT
+					g.BP_GOODSID 
+				FROM
+					PW_BP_GOODS g
+					LEFT JOIN PW_GOODS_RULE_LINK l ON g.BP_GOODSID = l.BP_GOODSID
+					LEFT JOIN PW_REDEEM_RULE r ON l.RULE_ID = r.RULE_ID 
+				WHERE
+					r.RULE_TYPE = 2 
+					AND r.CLOSE_DATE IS NOT NULL 
+					AND r.CLOSE_DATE &lt;= SYSDATE
+			)
+    
+  </select>
+  
+  <delete id="deleteByBpGoodsid" parameterType="com.portal.integralMall.model.PwBpGoodsEntity">
+    delete from PW_BP_GOODS
+    where BP_GOODSID = #{bpGoodsid,jdbcType=VARCHAR}
+  </delete>
+  
+  <insert id="insertBpGoods" parameterType="com.portal.integralMall.model.PwBpGoodsEntity">
+    insert into PW_BP_GOODS (BP_GOODSID, GOODS_NAME, STOCK_NUMBER, 
+      GOODS_DESC, GOODS_BRAND, GOODS_MODEL, 
+      GOODS_FEATURE, REDEEM_BP, REDEEM_NUMBER, 
+      REDEEM_RULEID, GOODS_OPEN_DATE, GOODS_CLOSE_DATE, GOODS_STATUS
+      )
+    values (#{bpGoodsid,jdbcType=VARCHAR}, #{goodsName,jdbcType=VARCHAR}, #{stockNumber,jdbcType=DECIMAL}, 
+      #{goodsDesc,jdbcType=VARCHAR}, #{goodsBrand,jdbcType=VARCHAR}, #{goodsModel,jdbcType=VARCHAR}, 
+      #{goodsFeature,jdbcType=VARCHAR}, #{redeemBp,jdbcType=DECIMAL}, #{redeemNumber,jdbcType=DECIMAL}, 
+      #{redeemRuleid,jdbcType=VARCHAR}, #{goodsOpenDate,jdbcType=TIMESTAMP}, #{goodsCloseDate,jdbcType=TIMESTAMP},
+      #{goodsStatus,jdbcType=VARCHAR}
+      )
+  </insert>
+  
+  <!-- 插入商品规则关联 -->
+  <insert id="insertGoodsRuleLink" parameterType="java.util.List">
+    insert into PW_GOODS_RULE_LINK (RULE_ID, BP_GOODSID)
+    <foreach collection="list" item="item" index="index" separator="union all">
+     select #{item.ruleId},#{item.bpGoodsid} from dual
+    </foreach>
+  </insert>
+  
+  <!-- 删除商品关联规则 -->
+  <delete id="deleteGoodsRuleLink" parameterType="com.portal.integralMall.model.PwBpGoodsEntity">
+    delete from PW_GOODS_RULE_LINK
+    where BP_GOODSID = #{bpGoodsid,jdbcType=VARCHAR}
+  </delete>
+  
+  <select id="selectGoodsRules" parameterType="java.util.Map" resultMap="goodsAndRules">
+	SELECT
+		pbg.BP_GOODSID,
+		pbg.GOODS_NAME,
+		pbg.STOCK_NUMBER,
+		pbg.GOODS_DESC,
+		pbg.GOODS_BRAND,
+		pbg.GOODS_MODEL,
+		pbg.GOODS_FEATURE,
+		pbg.REDEEM_BP,
+		pbg.REDEEM_NUMBER,
+		pbg.REDEEM_RULEID,
+		pbg.GOODS_OPEN_DATE,
+		pbg.GOODS_CLOSE_DATE,
+		pbg.GOODS_STATUS,
+		prr.RULE_ID,
+		prr.RULE_DESC,
+		prr.RULE_TYPE,
+		prr.REPEAT_STATUS,
+		prr.OPEN_DATE,
+		prr.CLOSE_DATE,
+		prr.LIMIT_NUMBER
+	FROM
+		PW_BP_GOODS pbg
+	LEFT JOIN PW_GOODS_RULE_LINK pgrl ON pbg.BP_GOODSID = pgrl.BP_GOODSID
+	LEFT JOIN PW_REDEEM_RULE prr ON prr.RULE_ID = pgrl.RULE_ID
+	WHERE
+		pbg.BP_GOODSID = #{bpGoodsid,jdbcType=VARCHAR}
+  </select>
+  
+  <update id="updateByBpGoodsid" parameterType="java.util.Map">
+    update PW_BP_GOODS
+    <set>
+      <if test="goodsName != null">
+        GOODS_NAME = #{goodsName,jdbcType=VARCHAR},
+      </if>
+      <if test="stockNumber != null">
+        STOCK_NUMBER = #{stockNumber,jdbcType=DECIMAL},
+      </if>
+      <if test="goodsDesc != null">
+        GOODS_DESC = #{goodsDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsBrand != null">
+        GOODS_BRAND = #{goodsBrand,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsModel != null">
+        GOODS_MODEL = #{goodsModel,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsFeature != null">
+        GOODS_FEATURE = #{goodsFeature,jdbcType=VARCHAR},
+      </if>
+      <if test="redeemBp != null">
+        REDEEM_BP = #{redeemBp,jdbcType=DECIMAL},
+      </if>
+      <if test="redeemNumber != null">
+        REDEEM_NUMBER = #{redeemNumber,jdbcType=DECIMAL},
+      </if>
+      <if test="redeemRuleid != null">
+        REDEEM_RULEID = #{redeemRuleid,jdbcType=VARCHAR},
+      </if>
+      <if test="goodsOpenDate != null">
+        GOODS_OPEN_DATE = #{goodsOpenDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="goodsCloseDate != null">
+        GOODS_CLOSE_DATE = #{goodsCloseDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="goodsStatus != null">
+        GOODS_STATUS = #{goodsStatus,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where BP_GOODSID = #{bpGoodsid,jdbcType=VARCHAR}
+  </update>
+  
+	<!-- 批量更新积分商品状态（包括逻辑删除） -->
+	<update id="updateByBpGoodsids" parameterType="java.util.Map" >
+		UPDATE 
+			PW_BP_GOODS 
+		SET 
+			GOODS_STATUS = #{goodsStatus} 
+		WHERE 
+			BP_GOODSID IN 
+			<foreach item="bpGoodsid" index="index" collection="bpGoodsids" open="(" separator="," close=")">  
+				#{bpGoodsid}
+			</foreach>
+	</update>
+  <resultMap id="goodsAndRules" type="com.portal.integralMall.model.PwBpGoodsEntity">
+    <id column="BP_GOODSID" jdbcType="VARCHAR" property="bpGoodsid" />
+    <result column="GOODS_NAME" jdbcType="VARCHAR" property="goodsName" />
+    <result column="STOCK_NUMBER" jdbcType="DECIMAL" property="stockNumber" />
+    <result column="GOODS_DESC" jdbcType="VARCHAR" property="goodsDesc" />
+    <result column="GOODS_BRAND" jdbcType="VARCHAR" property="goodsBrand" />
+    <result column="GOODS_MODEL" jdbcType="VARCHAR" property="goodsModel" />
+    <result column="GOODS_FEATURE" jdbcType="VARCHAR" property="goodsFeature" />
+    <result column="REDEEM_BP" jdbcType="DECIMAL" property="redeemBp" />
+    <result column="REDEEM_NUMBER" jdbcType="DECIMAL" property="redeemNumber" />
+    <result column="REDEEM_RULEID" jdbcType="VARCHAR" property="redeemRuleid" />
+    <result column="GOODS_OPEN_DATE" jdbcType="TIMESTAMP" property="goodsOpenDate" />
+    <result column="GOODS_CLOSE_DATE" jdbcType="TIMESTAMP" property="goodsCloseDate" />
+    <result column="GOODS_STATUS" jdbcType="VARCHAR" property="goodsStatus" />
+    <collection property="redeemRules"  ofType="com.portal.integralMall.model.PwRedeemRuleEntity">
+        <id column="RULE_ID" jdbcType="VARCHAR" property="ruleId" />
+	    <result column="RULE_DESC" jdbcType="VARCHAR" property="ruleDesc" />
+	    <result column="RULE_TYPE" jdbcType="VARCHAR" property="ruleType" />
+	    <result column="REPEAT_STATUS" jdbcType="VARCHAR" property="repeatStatus" />
+	    <result column="LIMIT_NUMBER" jdbcType="DECIMAL" property="limitNumber" />
+	    <result column="OPEN_DATE" jdbcType="TIMESTAMP" property="openDate" />
+	    <result column="CLOSE_DATE" jdbcType="TIMESTAMP" property="closeDate" />
+    </collection>
+  </resultMap>
+</mapper>

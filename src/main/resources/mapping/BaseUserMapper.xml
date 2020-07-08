@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mm.stock.module.base.user.data.BaseUserMapper">
+  <resultMap id="BaseResultMap" type="com.mm.stock.module.base.user.model.BaseUser">
+    <id column="user_id" property="userId" />
+    <result column="user_name_login" property="userNameLogin" />
+    <result column="user_password" property="userPassword" />
+    <result column="user_name_real" property="userNameReal" />
+    <result column="user_age" property="userAge" />
+    <result column="user_phone" property="userPhone" />
+    <result column="user_email" property="userEmail" />
+    <result column="user_ctime" property="userCtime" />
+    <result column="user_mtime" property="userMtime" />
+    <result column="user_status" property="userStatus" />
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+    user_id, user_name_login, user_password, user_name_real, user_age, user_phone, user_email, 
+    user_ctime, user_mtime, user_status
+  </sql>
+  
+  <select id="selectById" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from base_user
+    where user_id = #{userId}
+  </select>
+  
+  <select id="selectUserList" parameterType="com.mm.stock.module.base.user.model.BaseUser" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from base_user
+    <where>
+      <if test="userNameLogin != null">
+        and user_name_login = #{userNameLogin},
+      </if>
+      <if test="userNameReal != null">
+        and user_name_real = #{userNameReal},
+      </if>
+      <if test="userAge != null">
+        and user_age = #{userAge},
+      </if>
+      <if test="userPhone != null">
+        and user_phone = #{userPhone},
+      </if>
+      <if test="userEmail != null">
+        and user_email = #{userEmail},
+      </if>
+      <if test="userCtime != null">
+        and user_ctime = #{userCtime},
+      </if>
+      <if test="userMtime != null">
+        and user_mtime = #{userMtime},
+      </if>
+      <if test="userStatus != null">
+        and user_status = #{userStatus},
+      </if>
+    </where>
+  </select>
+  
+  <delete id="deleteById" parameterType="java.lang.String">
+    delete from base_user
+    where user_id = #{userId}
+  </delete>
+  
+  <insert id="insert" parameterType="com.mm.stock.module.base.user.model.BaseUser">
+    insert into base_user (user_id, user_name_login, user_password, 
+      user_name_real, user_age, user_phone, 
+      user_email, user_ctime, user_mtime, 
+      user_status)
+    values (#{userId}, #{userNameLogin}, #{userPassword}, 
+      #{userNameReal}, #{userAge}, #{userPhone}, 
+      #{userEmail}, #{userCtime}, #{userMtime}, 
+      #{userStatus})
+  </insert>
+  
+  <update id="updateById" parameterType="com.mm.stock.module.base.user.model.BaseUser">
+    update base_user
+    <set>
+      <if test="userNameLogin != null">
+        user_name_login = #{userNameLogin},
+      </if>
+      <if test="userPassword != null">
+        user_password = #{userPassword},
+      </if>
+      <if test="userNameReal != null">
+        user_name_real = #{userNameReal},
+      </if>
+      <if test="userAge != null">
+        user_age = #{userAge},
+      </if>
+      <if test="userPhone != null">
+        user_phone = #{userPhone},
+      </if>
+      <if test="userEmail != null">
+        user_email = #{userEmail},
+      </if>
+      <if test="userCtime != null">
+        user_ctime = #{userCtime},
+      </if>
+      <if test="userMtime != null">
+        user_mtime = #{userMtime},
+      </if>
+      <if test="userStatus != null">
+        user_status = #{userStatus},
+      </if>
+    </set>
+    where user_id = #{userId}
+  </update>
+  
+</mapper>
