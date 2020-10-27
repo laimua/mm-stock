@@ -2,10 +2,11 @@
 server.port=8012
 
 #mybatis configuration
-#mybatis.mapper-locations=classpath:com/mm/stock/module/base/*/data/*Mapper.xml
-#mybatis.type-aliases-package=com.mm.stock.module.base.*.module
+#mybatis.mapper-locations=classpath:com/mm/stock/**/data/*Mapper.xml
+#mybatis.type-aliases-package=com.mm.stock.**.model
 mybatis.mapper-locations=classpath:com/mm/stock/module/base/*/data/*Mapper.xml
-mybatis.type-aliases-package=com.mm.stock.module.base.*.module
+mybatis.type-aliases-package=com.mm.stock.module.base.*.model
+mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
 ## JPA
 #spring.jpa.database-platform=org.hibernate.dialect.MariaDBDialect
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL9Dialect
@@ -34,6 +35,11 @@ spring.redis.lettuce.pool.max-wait=-1ms
 spring.redis.lettuce.shutdown-timeout=100ms  
 spring.redis.lettuce.pool.max-idle=8  
 spring.redis.lettuce.pool.min-idle=0  
+
+## activeMQ
+spring.activemq.broker-url=tcp://127.0.0.1:61616
+spring.activemq.user=admin
+spring.activemq.password=admin
 
 #SpringBoot upload configuration
 spring.http.multipart.maxFileSize=20Mb

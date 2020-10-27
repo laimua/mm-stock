@@ -33,7 +33,7 @@ import com.mm.stock.common.constants.ActiveMQConstants;
 @Configuration
 public class ActiveMQConfig {
     
-    @Value("${${spring.activemq.broker-url}:}")
+    @Value("${spring.activemq.broker-url:}")
     private String brokerURL;
     
     @Value("${spring.activemq.user-name:}")
